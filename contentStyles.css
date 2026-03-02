@@ -1,0 +1,42 @@
+:root {
+  --gt-font-stack: inherit, "Roboto", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+}
+
+.gt-inline-prompt,
+.gt-inline-result {
+  font-family: var(--gt-font-stack);
+}
+
+.gt-inline-prompt {
+  position: absolute;
+  z-index: 2147483647;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #202124;
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.15);
+  cursor: pointer;
+}
+
+.gt-inline-prompt:hover {
+  background: #e8f0fe;
+  border-color: #4285f4;
+}
+
+.gt-inline-result {
+  position: absolute;
+  z-index: 2147483647;
+  max-width: 320px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #202124;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(60, 64, 67, 0.25);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

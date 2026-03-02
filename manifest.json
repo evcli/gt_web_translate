@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "GT",
+  "description": "Inline translator: select text to translate with a small prompt, similar to Google Translate.",
+  "version": "0.1.0",
+  "permissions": ["contextMenus", "clipboardRead"],
+  "host_permissions": ["https://translate.googleapis.com/*"],
+  "action": {
+    "default_title": "GT",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "css": ["contentStyles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
