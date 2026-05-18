@@ -7,6 +7,23 @@ let resultEl = null;
 let lastSelection = "";
 let lastRect = null;
 let selectionTimer = null;
+let showInlinePrompt = true;
+
+// Load initial setting
+chrome.storage.sync.get({ showInlinePrompt: true }, (items) => {
+  showInlinePrompt = items.showInlinePrompt;
+});
+
+// Listen for setting changes
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === "sync" && changes.showInlinePrompt) {
+    showInlinePrompt = changes.showInlinePrompt.newValue;
+    if (!showInlinePrompt) {
+      removeUi();
+    }
+  }
+});
+
 
 const styles = {
   prompt: "gt-inline-prompt",
@@ -37,6 +54,7 @@ function handleSelectionChange() {
 }
 
 function processSelection() {
+  if (!showInlinePrompt) return;
   const selection = window.getSelection();
   if (!selection || selection.isCollapsed) {
     removeUi();

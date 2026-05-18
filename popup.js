@@ -7,7 +7,25 @@ let retryHooked = false;
 const MIN_WIDTH = 360;
 const MAX_WIDTH = 800;
 
-document.addEventListener("DOMContentLoaded", () => translateClipboard(false));
+const toggleSelectionEl = document.getElementById("toggleSelection");
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Load settings
+  chrome.storage.sync.get({ showInlinePrompt: true }, (items) => {
+    if (toggleSelectionEl) {
+      toggleSelectionEl.checked = items.showInlinePrompt;
+    }
+  });
+
+  // Save settings when toggled
+  if (toggleSelectionEl) {
+    toggleSelectionEl.addEventListener("change", () => {
+      chrome.storage.sync.set({ showInlinePrompt: toggleSelectionEl.checked });
+    });
+  }
+
+  translateClipboard(false);
+});
 
 async function translateClipboard(triggeredByUser) {
   setStatus("Reading clipboard...");

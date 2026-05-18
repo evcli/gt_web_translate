@@ -3,7 +3,7 @@
   "name": "GT",
   "description": "Inline translator: select text to translate with a small prompt, similar to Google Translate.",
   "version": "0.1.0",
-  "permissions": ["contextMenus", "clipboardRead"],
+  "permissions": ["contextMenus", "clipboardRead", "storage"],
   "host_permissions": ["https://translate.googleapis.com/*"],
   "action": {
     "default_title": "GT",
