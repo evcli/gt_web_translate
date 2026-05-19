@@ -8,6 +8,9 @@ let lastSelection = "";
 let lastRect = null;
 let selectionTimer = null;
 let showInlinePrompt = true;
+let lastMousePos = null;
+let clickTimeout = null;
+let promptFadeTimeout = null;
 
 // Load initial setting
 chrome.storage.sync.get({ showInlinePrompt: true }, (items) => {
@@ -31,10 +34,56 @@ const styles = {
   loading: "gt-inline-loading",
 };
 
-document.addEventListener("mouseup", handleSelectionChange);
-document.addEventListener("keyup", handleSelectionChange);
-document.addEventListener("touchend", handleSelectionChange);
-document.addEventListener("selectionchange", handleSelectionChange);
+document.addEventListener("mousedown", (e) => {
+  // Cancel any pending timers immediately on mouse press
+  if (clickTimeout) {
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+  }
+  if (selectionTimer) {
+    clearTimeout(selectionTimer);
+    selectionTimer = null;
+  }
+
+  // If clicking outside prompt or result, remove UI immediately
+  if (promptEl?.contains(e.target) || resultEl?.contains(e.target)) return;
+  removeUi();
+});
+
+document.addEventListener("mouseup", (e) => {
+  // Ignore mouseup events inside the prompt button or translation panel to avoid resetting selection state
+  if (promptEl?.contains(e.target) || resultEl?.contains(e.target)) return;
+
+  lastMousePos = { x: e.pageX, y: e.pageY };
+
+  if (clickTimeout) {
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+  }
+
+  // If it's a double-click, delay to see if it turns into a triple-click
+  if (e.detail === 2) {
+    clickTimeout = setTimeout(() => {
+      handleSelectionChange();
+      clickTimeout = null;
+    }, 250); // 250ms window to catch a potential third click (mousedown clears this)
+  } else {
+    // Single click/drag-select (detail === 1) or triple-click (detail === 3)
+    handleSelectionChange();
+  }
+});
+document.addEventListener("keyup", () => {
+  lastMousePos = null; // Keyup has no mouse coordinates, fallback to selection rect
+  handleSelectionChange();
+});
+document.addEventListener("touchend", (e) => {
+  if (e.changedTouches && e.changedTouches.length > 0) {
+    lastMousePos = { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY };
+  } else {
+    lastMousePos = null;
+  }
+  handleSelectionChange();
+});
 window.addEventListener("scroll", removeUi, { passive: true });
 window.addEventListener("resize", removeUi);
 chrome.runtime.onMessage.addListener((message) => {
@@ -42,11 +91,7 @@ chrome.runtime.onMessage.addListener((message) => {
     handleContextTranslate(message.text);
   }
 });
-document.addEventListener("click", (e) => {
-  if (!promptEl && !resultEl) return;
-  if (promptEl?.contains(e.target) || resultEl?.contains(e.target)) return;
-  removeUi();
-});
+// Note: mousedown event listener already handles removing the UI when clicking outside.
 
 function handleSelectionChange() {
   if (selectionTimer) clearTimeout(selectionTimer);
@@ -112,16 +157,32 @@ function showPrompt(rect) {
   promptEl = document.createElement("button");
   promptEl.className = styles.prompt;
   promptEl.textContent = "T";
-  promptEl.style.top = `${window.scrollY + rect.top - 32}px`;
-  promptEl.style.left = `${window.scrollX + rect.left}px`;
+
+  if (lastMousePos) {
+    // Position slightly offset from the mouse pointer (bottom-right)
+    promptEl.style.top = `${lastMousePos.y + 12}px`;
+    promptEl.style.left = `${lastMousePos.x + 12}px`;
+  } else {
+    // Fallback to text selection bounding box
+    promptEl.style.top = `${window.scrollY + rect.top - 32}px`;
+    promptEl.style.left = `${window.scrollX + rect.left}px`;
+  }
+
   promptEl.addEventListener("click", onTranslateClick);
+  promptEl.addEventListener("mouseenter", onTranslateClick); // Hover to translate!
 
   document.body.appendChild(promptEl);
+
+  // Set a 2.5 seconds auto-fade out timeout to avoid visual clutter
+  promptFadeTimeout = setTimeout(() => {
+    removePrompt();
+  }, 2500);
 }
 
 function onTranslateClick(e) {
   e.stopPropagation();
   if (!lastSelection) return;
+  removePrompt(); // Remove 'T' button immediately upon click to make way for result panel
   showResult("Translating...");
 
   requestTranslation(lastSelection);
@@ -186,6 +247,10 @@ function removePrompt() {
   if (promptEl) {
     promptEl.remove();
     promptEl = null;
+  }
+  if (promptFadeTimeout) {
+    clearTimeout(promptFadeTimeout);
+    promptFadeTimeout = null;
   }
 }
 

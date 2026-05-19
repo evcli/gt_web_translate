@@ -22,6 +22,14 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleSelectionEl.addEventListener("change", () => {
       chrome.storage.sync.set({ showInlinePrompt: toggleSelectionEl.checked });
     });
+
+    // Prevent clicking the switch from triggering the clipboard translate click listener on document
+    const switchContainer = document.querySelector(".switch-container");
+    if (switchContainer) {
+      switchContainer.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
   }
 
   translateClipboard(false);

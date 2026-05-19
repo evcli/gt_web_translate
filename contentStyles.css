@@ -10,19 +10,28 @@
 .gt-inline-prompt {
   position: absolute;
   z-index: 2147483647;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: #202124;
-  background: #f8f9fa;
-  border: 1px solid #dadce0;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.15);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffffff;
+  background: #4285f4;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
   cursor: pointer;
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 1;
+  transition: transform 0.1s ease, background 0.1s ease;
 }
 
 .gt-inline-prompt:hover {
-  background: #e8f0fe;
-  border-color: #4285f4;
+  background: #357ae8;
+  transform: scale(1.15);
 }
 
 .gt-inline-result {
